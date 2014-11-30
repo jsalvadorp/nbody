@@ -2,7 +2,6 @@
 
 
 cl_int CL_State::initOpenCL() {
-    cl_int status;
     
     //PASO 1: Identificar e inicializar las plataformas
     numPlatforms = 0;
@@ -17,15 +16,15 @@ cl_int CL_State::initOpenCL() {
     *devices = NULL;
 
     //Usando el GPU
-    status = clGetDeviceIDs(platforms[0],CL_DEVICE_TYPE_GPU,0,NULL,&numDevices);
+//    status = clGetDeviceIDs(platforms[0],CL_DEVICE_TYPE_GPU,0,NULL,&numDevices);
     //Usando el CPU
-//	status=clGetDeviceIDs(platforms[1],CL_DEVICE_TYPE_CPU,0,NULL,&numDevices);
+	status=clGetDeviceIDs(platforms[1],CL_DEVICE_TYPE_CPU,0,NULL,&numDevices);
 
     devices = (cl_device_id*)malloc(numDevices*sizeof(cl_device_id));
     //Usando el GPU
-    status = clGetDeviceIDs(platforms[0],CL_DEVICE_TYPE_GPU,numDevices,devices,NULL);
+//    status = clGetDeviceIDs(platforms[0],CL_DEVICE_TYPE_GPU,numDevices,devices,NULL);
     //Usando el CPU
-//	status=clGetDeviceIDs(platforms[1],CL_DEVICE_TYPE_CPU,numDevices,devices,NULL);
+	status=clGetDeviceIDs(platforms[1],CL_DEVICE_TYPE_CPU,numDevices,devices,NULL);
 
     //PASO 3: Crear el contexto
     context = NULL;
@@ -40,6 +39,7 @@ cl_int CL_State::initOpenCL() {
     status = clBuildProgram(program,numDevices,devices,NULL,NULL,NULL);
 
     if (status!=CL_SUCCESS) {
+		printf("Failure in Create and Compile: %i", status);
         return(0); 
     }
 
@@ -56,10 +56,10 @@ cl_int CL_State::initOpenCL() {
 cl_int CL_State::createBuffers(float *pos, float *vel, float *new_pos, float *new_vel, int stars) {
     star_count = stars;
     //Paso 10: Configurar la estructura del "work-item"
-    global_work_size[2]={stars,1};
-    local_work_size[2]={1,1};
+    global_work_size[0] = stars; global_work_size[1] = 1;
+    local_work_size[0] = 1; local_work_size[1] = 1;
 
-    int size = 4 * stars * sizeof(float);
+    int size = 4 * stars * sizeof(float); //why multiplicated with 4????
     //PASO 5: Crear los "device buffers"
     buf_position = clCreateBuffer(context,CL_MEM_READ_WRITE,size,NULL,&status);
     buf_velocity = clCreateBuffer(context,CL_MEM_READ_WRITE,size,NULL,&status);
@@ -67,16 +67,16 @@ cl_int CL_State::createBuffers(float *pos, float *vel, float *new_pos, float *ne
     buf_new_velocity = clCreateBuffer(context,CL_MEM_READ_WRITE,size,NULL,&status);
 
     //PASO 6: Pasar los datos de la memoria del CPU a los "buffers" del dispositivo
-    status = clEnqueueWriteBuffer(cmdQueue,buf_position,CL_FALSE,0,size,pos,0,NULL,NULL);
-    status = clEnqueueWriteBuffer(cmdQueue,buf_new_position,CL_FALSE,0,size,vel,0,NULL,NULL);
-    status = clEnqueueWriteBuffer(cmdQueue,buf_velocity,CL_FALSE,0,size,new_pos,0,NULL,NULL);
-    status = clEnqueueWriteBuffer(cmdQueue,buf_new_velocity,CL_FALSE,0,size,new_vel,0,NULL,NULL);
+    status = clEnqueueWriteBuffer(cmdQueue, buf_position, CL_FALSE, 0, size, pos, 0, NULL, NULL);
+    status = clEnqueueWriteBuffer(cmdQueue, buf_new_position, CL_FALSE, 0,size, vel, 0, NULL, NULL);
+    status = clEnqueueWriteBuffer(cmdQueue, buf_velocity, CL_FALSE, 0, size, new_pos, 0, NULL, NULL);
+    status = clEnqueueWriteBuffer(cmdQueue, buf_new_velocity, CL_FALSE, 0, size, new_vel, 0, NULL, NULL);
     return status;
 }
 
 cl_int CL_State::call(float time, float *pos, float *vel) {
     int size = star_count * 4 * sizeof(float);
-    int n = N;
+    //int n = N;
     //PASO 9: Pasar argumentos al kernel
     status = clSetKernelArg(kernel,0,sizeof(cl_mem),&buf_position);
     status |= clSetKernelArg(kernel,1,sizeof(cl_mem),&buf_velocity);
@@ -116,12 +116,15 @@ void CL_State::free() {
     clReleaseKernel(kernel);
     clReleaseProgram(program);
     clReleaseCommandQueue(cmdQueue);
-    clReleaseMemObject(bufferA);
-    clReleaseMemObject(bufferB);
-    clReleaseMemObject(bufferC);
+
+    clReleaseMemObject(buf_position);
+	clReleaseMemObject(buf_velocity);
+	clReleaseMemObject(buf_new_position);
+	clReleaseMemObject(buf_new_velocity);
+
     clReleaseContext(context);
 
-    free(platforms);
-    free(devices);
+    //free(platforms);
+    //free(devices);
 }
 

@@ -6,7 +6,9 @@
 #include <cstring>
 #include <cassert>
 #include <stdio.h>
-#include <algrithm>
+#include <stdlib.h>
+
+#include <algorithm>
 #include <sys/timeb.h>
 #ifdef __APPLE__
 #include <OpenCL/cl.h>
@@ -22,8 +24,12 @@ extern float *velocity;
 extern float *new_position;
 extern float *new_velocity;
 
+const char *programSource = "nbody.ocl";
 
-struct CLState { 
+class CL_State { 
+public:
+	cl_int status;
+
     cl_uint numPlatforms;
     cl_platform_id *platforms;
     cl_uint numDevices;
@@ -41,7 +47,8 @@ struct CLState {
     
     int star_count;
 
-    size_t global_work_size, local_work_size;
+	size_t global_work_size[2];
+	size_t local_work_size[2];
 
     cl_int initOpenCL() ;
 
@@ -53,6 +60,6 @@ struct CLState {
 
     void free() ;
 
-}
+};
 
 
