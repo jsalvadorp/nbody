@@ -24,7 +24,7 @@ extern float *velocity;
 extern float *new_position;
 extern float *new_velocity;
 
-const char *programSource = "nbody.ocl";
+char *programSource;
 
 class CL_State { 
 public:

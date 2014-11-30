@@ -2,6 +2,25 @@
 
 
 cl_int CL_State::initOpenCL() {
+	
+	FILE *fp;
+	char fileName[] = "nbody.ocl";
+	size_t source_size; 
+	/* Load the source code containing the kernel*/
+	fp = fopen(fileName, "rb");
+	if (!fp) {
+		fprintf(stderr, "Failed to load kernel.\n");
+		exit(1);
+	}
+	fseek(fp, 0, SEEK_END);
+	long codeSize = ftell(fp);
+	programSource = (char*) malloc( codeSize );
+	source_size = fread(programSource, 1, codeSize, fp);
+	fclose(fp);
+
+
+
+
     
     //PASO 1: Identificar e inicializar las plataformas
     numPlatforms = 0;
@@ -107,7 +126,7 @@ cl_int CL_State::call(float time, float *pos, float *vel) {
     swap(buf_new_position, buf_position);
     swap(buf_new_velocity, buf_velocity);
     
-
+	return 0;
 }
 
 void CL_State::free() {
