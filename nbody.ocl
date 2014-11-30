@@ -22,7 +22,7 @@ __kernel void nbody(
     float time_delta,
     int count
 ) {
-    int j = get_global_id(0);
+    int j = get_global_id(0) * get_local_size(0) + get_local_id(0);
 
     new_position[j].x = position[j].x + velocity[j].x * time_delta;
     new_position[j].y = position[j].y + velocity[j].y * time_delta;
