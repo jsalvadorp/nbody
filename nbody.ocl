@@ -1,0 +1,47 @@
+
+
+#define EPS2 0.1
+
+// usamos float4 para guardar la posicion en los primeros 3 valores y la masa en el ultimo
+
+// http://http.developer.nvidia.com/GPUGems3/gpugems3_ch31.html
+// G constante gravitacional??
+float4 accDelta(float4 a, float4 b) {
+    float4 r = (float4) (b.x - a.x, b.y - a.y, b.z - a.z, 0.0f);
+    float dist2 = dot(r, r) + EPS2;
+    float dist3inv = 1.0f / sqrt(dist2 * dist2 * dist2);
+    float s = b.w * dist3inv; // * G
+    return (float4)(r.x * s, r.y * s, r.z * s);
+}
+
+__kernel void nbody(
+    __global float4 *position, 
+    __global float4 *velocity, 
+    __global float4 *new_position, 
+    __global float4 *new_velocity, 
+    float time_delta,
+    int count
+) {
+    int j = get_global_id(0);
+
+    new_position[j].x = position[j].x + velocity[j].x * time_delta;
+    new_position[j].y = position[j].y + velocity[j].y * time_delta;
+    new_position[j].z = position[j].z + velocity[j].z * time_delta;
+    // no es necesario porque la masa no cambia
+    // new_position[j].w = position[j].w;
+
+    float4 acceleration = (float4)(0.0f);
+    for(int i = 0; i < count; i++) {
+        float4 acc_delta = accDelta(position[i], position[j]);
+        acceleration.x += acc_delta.x;
+        acceleration.y += acc_delta.y;
+        acceleration.z += acc_delta.z;
+    }
+
+    new_velocity[j].x = velocity[j].x + acceleration * time_delta;
+    new_velocity[j].y = velocity[j].y + acceleration * time_delta;
+    new_velocity[j].z = velocity[j].z + acceleration * time_delta;
+    
+}
+
+
