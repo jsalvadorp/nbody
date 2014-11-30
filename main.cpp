@@ -101,9 +101,9 @@ void timer(int value) {
     update(); 
 }
 
-void init() {
-    allocateStars(1000);
-    placeDisk(1000, vec3(0.0f, 0.0f, 0.0f), 60.0f, 10.0f, 1000.0f); 
+void init(int stars) {
+    allocateStars(stars);
+    placeDisk(stars, vec3(0.0f, 0.0f, 0.0f), 60.0f, 10.0f, 1000.0f); 
 }
 
 int main(int argc, char **argv) {
@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(600, 600); 
     glutCreateWindow(argv[0]);
-    init();
+    init(9000);
     glutDisplayFunc(draw); 
     glutTimerFunc(50, timer, 1);
     glutReshapeFunc(reshape);
