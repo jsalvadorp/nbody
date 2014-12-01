@@ -1,5 +1,7 @@
 #include "nbody.hpp"
 
+char *programSource;
+
 
 cl_int CL_State::initOpenCL() {
 	
@@ -24,7 +26,7 @@ cl_int CL_State::initOpenCL() {
     
     //PASO 1: Identificar e inicializar las plataformas
     numPlatforms = 0;
-    *platforms = NULL;
+    platforms = NULL;
 
     status = clGetPlatformIDs(0,NULL,&numPlatforms);
     platforms = (cl_platform_id*)malloc(numPlatforms*sizeof(cl_platform_id));
@@ -32,7 +34,7 @@ cl_int CL_State::initOpenCL() {
 
     //PASO 2: Identificar e inicializar los dispositivos
     numDevices = 0;
-    *devices = NULL;
+    devices = NULL;
 
     //Usando el GPU
 //    status = clGetDeviceIDs(platforms[0],CL_DEVICE_TYPE_GPU,0,NULL,&numDevices);

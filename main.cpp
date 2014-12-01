@@ -12,6 +12,7 @@
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "nbody.hpp"
 
 using namespace std;
 using namespace glm;
@@ -104,7 +105,12 @@ void timer(int value) {
     update(); 
 }
 
+CL_State opencl;
+
 void init(int stars) {
+    opencl.initOpenCL();
+
+
     allocateStars(stars);
     placeDisk(stars, vec3(0.0f, 0.0f, 0.0f), 60.0f, 10.0f, 1000.0f); 
 }
