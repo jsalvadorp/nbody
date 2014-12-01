@@ -16,11 +16,11 @@ cl_int CL_State::initOpenCL() {
 	}
 	fseek(fp, 0, SEEK_END);
 	long codeSize = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
 	programSource = (char*) malloc( codeSize );
 	source_size = fread(programSource, 1, codeSize, fp);
 	fclose(fp);
-
-
+    cout << programSource << endl;
 
 
     
@@ -32,21 +32,28 @@ cl_int CL_State::initOpenCL() {
     platforms = (cl_platform_id*)malloc(numPlatforms*sizeof(cl_platform_id));
     status = clGetPlatformIDs(numPlatforms,platforms,NULL);
 
+    cout << numPlatforms << endl;
+
     //PASO 2: Identificar e inicializar los dispositivos
     numDevices = 0;
     devices = NULL;
 
     //Usando el GPU
-//    status = clGetDeviceIDs(platforms[0],CL_DEVICE_TYPE_GPU,0,NULL,&numDevices);
+    status = clGetDeviceIDs(platforms[0],CL_DEVICE_TYPE_GPU,0,NULL,&numDevices);
     //Usando el CPU
-	status=clGetDeviceIDs(platforms[1],CL_DEVICE_TYPE_CPU,0,NULL,&numDevices);
+	//status=clGetDeviceIDs(platforms[1],CL_DEVICE_TYPE_CPU,0,NULL,&numDevices);
+    cout << numDevices << endl;
 
     devices = (cl_device_id*)malloc(numDevices*sizeof(cl_device_id));
     //Usando el GPU
-//    status = clGetDeviceIDs(platforms[0],CL_DEVICE_TYPE_GPU,numDevices,devices,NULL);
+    status = clGetDeviceIDs(platforms[0],CL_DEVICE_TYPE_GPU,numDevices,devices,NULL);
     //Usando el CPU
-	status=clGetDeviceIDs(platforms[1],CL_DEVICE_TYPE_CPU,numDevices,devices,NULL);
+	//status=clGetDeviceIDs(platforms[1],CL_DEVICE_TYPE_CPU,numDevices,devices,NULL);
 
+    if (status!=CL_SUCCESS) {
+		printf("Failure fetching device id: %i", status);
+        return(0); 
+    }
     //PASO 3: Crear el contexto
     context = NULL;
     context = clCreateContext(NULL,numDevices,devices,NULL,NULL,&status);
@@ -61,6 +68,10 @@ cl_int CL_State::initOpenCL() {
 
     if (status!=CL_SUCCESS) {
 		printf("Failure in Create and Compile: %i", status);
+        size_t length;
+        char buffer[2048];
+        clGetProgramBuildInfo(program, devices[0], CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &length);
+        cout<<"--- Build log ---\n "<<buffer<<endl;
         return(0); 
     }
 
@@ -92,6 +103,11 @@ cl_int CL_State::createBuffers(float *pos, float *vel, float *new_pos, float *ne
     status = clEnqueueWriteBuffer(cmdQueue, buf_new_position, CL_FALSE, 0,size, vel, 0, NULL, NULL);
     status = clEnqueueWriteBuffer(cmdQueue, buf_velocity, CL_FALSE, 0, size, new_pos, 0, NULL, NULL);
     status = clEnqueueWriteBuffer(cmdQueue, buf_new_velocity, CL_FALSE, 0, size, new_vel, 0, NULL, NULL);
+    
+    if (status!=CL_SUCCESS) {
+		printf("Failure buffers %i", status);
+        return(0); 
+    }
     return status;
 }
 
@@ -103,10 +119,11 @@ cl_int CL_State::call(float time, float *pos, float *vel) {
     status |= clSetKernelArg(kernel,1,sizeof(cl_mem),&buf_velocity);
     status |= clSetKernelArg(kernel,2,sizeof(cl_mem),&buf_new_position);
     status |= clSetKernelArg(kernel,3,sizeof(cl_mem),&buf_new_velocity);
-    status |= clSetKernelArg(kernel,4,sizeof(int),&star_count);
-    status |= clSetKernelArg(kernel,5,sizeof(float),&time);
+    status |= clSetKernelArg(kernel,4,sizeof(float),&time);
+    status |= clSetKernelArg(kernel,5,sizeof(int),&star_count);
 
     if (status != CL_SUCCESS) {
+		printf("Failure setting args %i", status);
         return status; 
        
     }
@@ -115,6 +132,7 @@ cl_int CL_State::call(float time, float *pos, float *vel) {
     status=clEnqueueNDRangeKernel(cmdQueue,kernel,2,NULL,global_work_size,local_work_size,0,NULL,NULL);
 
     if (status!=CL_SUCCESS) {
+		printf("Failure calling kernel %i", status);
         return(0); 
        
     }
