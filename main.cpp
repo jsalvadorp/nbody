@@ -18,78 +18,83 @@ using namespace std;
 using namespace glm;
 
 int star_count;
-float *position;
-float *velocity;
-float *new_position;
-float *new_velocity;
+float (*position)[4];
+float (*velocity)[4];
+float (*new_position)[4];
+float (*new_velocity)[4];
 
+#define X 0
+#define Y 1
+#define Z 2
+#define W 3
 
 
 void allocateStars(int stars) {
-    position = new float[4 * stars];
-    velocity = new float[4 * stars];
+    position = new float[stars][4];
+    velocity = new float[stars][4];
 
-    new_position = new float[4 * stars];
-    new_velocity = new float[4 * stars];
+    new_position = new float[stars][4];
+    new_velocity = new float[stars][4];
     
     star_count = 0;
 }
 
-void placeDisk(int stars, vec3 pos, float radius, float min_mass, float max_mass) {
-    int slices = 10, stars_per_slice = stars / slices;
-    float slice_angle = 8 * M_PI / slices;
-    #if 1
-    position[4 * star_count    ] = -10;
-    position[4 * star_count + 1] = 0;
-    position[4 * star_count + 2] = 0;
-    position[4 * star_count + 3] = 1e17f;         
-    velocity[4 * star_count    ] = 0.0f;
-    velocity[4 * star_count + 1] = 0.0f;
-    velocity[4 * star_count + 2] = 0.0f;
-    velocity[4 * star_count + 3] = 0.0f;
-            new_position[4 * star_count + 3] = position[4 * star_count + 3];
+void placeDisk(int stars, vec3 pos, float radius, float min_mass, float max_mass /*, float radial_vel, vec3 vel*/) {
+    #if 0
+    position[star_count][X] = 0.0f;
+    position[star_count][Y] = 0.0f;
+    position[star_count][Z] = 0.0f;
+    position[star_count][W] = 1e19f;
+    
+    velocity[star_count][X] = 0.0f;
+    velocity[star_count][Y] = 1.0f;
+    velocity[star_count][Z] = 2.0f;
+    velocity[star_count][W] = 0.0f;
+
     star_count++;
-    position[4 * star_count    ] = 10;
-    position[4 * star_count + 1] = 0;
-    position[4 * star_count + 2] = 0;
-    position[4 * star_count + 3] = 1e17f;         
-    velocity[4 * star_count    ] = 0.0f;
-    velocity[4 * star_count + 1] = 0.0f;
-    velocity[4 * star_count + 2] = 0.0f;
-    velocity[4 * star_count + 3] = 0.0f;
-            new_position[4 * star_count + 3] = position[4 * star_count + 3];
+
+    position[star_count][X] = (float(rand()) / RAND_MAX) * 5.0f;
+    position[star_count][Y] = (float(rand()) / RAND_MAX) * 5.0f;
+    position[star_count][Z] = (float(rand()) / RAND_MAX) * 5.0f;
+    position[star_count][W] = 1e19f;
+    
+    velocity[star_count][X] = 0.0f;
+    velocity[star_count][Y] = -1.0f;
+    velocity[star_count][Z] = 2.0f;
+    velocity[star_count][W] = 0.0f;
+
     star_count++;
-    return; 
+
+    
+    //return; 
 
     #endif
 
-    for(int i = 0; i < slices; i++) {
-        cout << cos(i * slice_angle) << "," << sin(i * slice_angle) << endl;
-        for(int j = 0; j < stars_per_slice; j++) {
-            float r = (float(rand()) / RAND_MAX) * radius;
-            float theta = (i * slice_angle) + (float(rand()) / RAND_MAX) * slice_angle;
+    for(int i = 0; i < stars; i++) {
+        float r = (float(rand()) / RAND_MAX) * radius;
+        float theta = 2 * M_PI * (float(rand()) / RAND_MAX);
+        float mass = min_mass + (float(rand()) / RAND_MAX) * (max_mass - min_mass);
+        float x = pos[0] + r * cos(theta);
+        float y = pos[1] + r * sin(theta);
+        float z = pos[2] + (float(rand()) / RAND_MAX) * cos(2 * M_PI * r / radius) * radius;
 
-            float x = pos[0] + r * cos(theta);
-            float y = pos[1] + r * sin(theta);
-            float z = pos[2] + (float(rand()) / RAND_MAX) * cos(2 * M_PI * r / radius) * radius;
-            float mass = min_mass + (float(rand()) / RAND_MAX) * (radius/r) * (max_mass - min_mass);
+        cout << "x " <<x << " y " << y << " z " << z << endl;
+        position[star_count][X] = x;
+        position[star_count][Y] = y;
+        position[star_count][Z] = z;
+        position[star_count][W] = 1e19f;
+        
+        velocity[star_count][X] = 0.0f;
+        velocity[star_count][Y] = 0.0f;
+        velocity[star_count][Z] = 0.0f;
+        velocity[star_count][W] = 0.0f;
 
-            position[4 * star_count    ] = x;
-            position[4 * star_count + 1] = y;
-            position[4 * star_count + 2] = z;
-            position[4 * star_count + 3] = mass;         
-            velocity[4 * star_count    ] = 0.0f;
-            velocity[4 * star_count + 1] = 0.0f;
-            velocity[4 * star_count + 2] = 0.0f;
-            velocity[4 * star_count + 3] = 0.0f;
-            new_position[4 * star_count + 3] = position[4 * star_count + 3];
-
-            cout << x << ", " << y << ", " << z << " = " << mass << endl;
-
-            star_count++;
-            // velocity
-        }
+        star_count++;
     }
+    
+    return;
+
+ 
 }
 
 void reshape (int w, int h) {
@@ -114,7 +119,7 @@ void applyCam() {
     
 }
 
-bool draw_vectors = true;
+bool draw_vectors = false;
 
 void draw() {
     applyCam();
@@ -126,18 +131,23 @@ void draw() {
     
     glBegin(GL_POINTS);
     for(int i = 0; i < star_count; i++) {
-        int offset = 4*i;
-        glPointSize(std::min(position[offset+3] / 100.0f, 1.0f));
-        glVertex3fv(position + offset);
+        /*position[i][X] = std::min(55.0f, std::max(-55.0f, position[i][X]));
+        position[i][Y] = std::min(55.0f, std::max(-55.0f, position[i][Y]));
+        position[i][Z] = std::min(55.0f, std::max(-55.0f, position[i][Z]));
+        velocity[i][X] = std::min(5.0f, std::max(-5.0f, position[i][X]));
+        velocity[i][Y] = std::min(5.0f, std::max(-5.0f, position[i][Y]));
+        velocity[i][Z] = std::min(5.0f, std::max(-5.0f, position[i][Z]));*/
+        cout << i << ": x " << position[i][X]  << ": y " << position[i][Y] << ": z " << position[i][Z] << ": mass " << position[i][W] << endl;
+        glPointSize(std::min(position[i][W] / 100.0f, 1.0f));
+        glVertex3fv(position[i]);
     }
     glEnd();
     
     if(draw_vectors) {
         glBegin(GL_LINES);
         for(int i = 0; i < star_count; i ++) {
-            int offset = 4*i;
-            glVertex3fv(position + offset);
-            glVertex3f(position[offset] + 4*velocity[offset], position[offset+1] + 4*velocity[offset+1], position[offset+2] + 4*velocity[offset+2]);
+            glVertex3fv(position[i]);
+            //glVertex3f(position[offset] + 4*velocity[offset], position[offset+1] + 4*velocity[offset+1], position[offset+2] + 4*velocity[offset+2]);
         }
         glEnd();
     }
@@ -147,13 +157,16 @@ void draw() {
 }
 
 CL_State opencl;
-#define TIME_DELTA 0.12f
+#define TIME_DELTA 0.006f
 void update() {
-    cout << "pos 0 x " << position[0] << "pos 0 y " << position[1]<< "pos 0 z " << position[2] << " mas 0 x "<< position[3] << " vel 0 x "  << velocity[0]<< endl;
-    cout << "pos 1 x " << position[4] << "pos 1 y " << position[5]<< "pos 1 z " << position[6]<< " mas 0 x "<< position[7] << " vel 1 x " << velocity[4]<< endl;
+    int offs = 0;
     cout << "update " << endl;
-    opencl.call(TIME_DELTA, position, velocity);
+    
 
+    assert(std::abs(position[offs][X]) < 1000);
+    opencl.call(TIME_DELTA, position, velocity);
+    
+    
     glutPostRedisplay();
 }
 
@@ -168,7 +181,8 @@ void init(int stars) {
 
 
     allocateStars(stars);
-    placeDisk(stars, vec3(0.0f, 0.0f, 0.0f), 50.0f, 2.0f, 400.0f); 
+    placeDisk(stars/2, vec3(-40.0f, -40.0f, 0.0f), 15.0f, 1e20f, 9e20f); 
+    placeDisk(stars/2, vec3(40.0f, 40.0f, 0.0f), 15.0f, 1e20f, 9e20f); 
     opencl.createBuffers(position, velocity, new_position, new_velocity, star_count);
 }
 
@@ -177,7 +191,7 @@ int main(int argc, char **argv) {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(600, 600); 
     glutCreateWindow(argv[0]);
-    init(300);
+    init(100);
     glutDisplayFunc(draw); 
     glutTimerFunc(50, timer, 1);
     glutReshapeFunc(reshape);

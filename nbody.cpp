@@ -4,7 +4,7 @@ char *programSource;
 
 
 cl_int CL_State::initOpenCL() {
-	
+    status = 0;	
 	FILE *fp;
 	char fileName[] = "nbody.ocl";
 	size_t source_size; 
@@ -85,7 +85,7 @@ cl_int CL_State::initOpenCL() {
 
 
 
-cl_int CL_State::createBuffers(float *pos, float *vel, float *new_pos, float *new_vel, int stars) {
+cl_int CL_State::createBuffers(float (*pos)[4], float (*vel)[4], float (*new_pos)[4], float (*new_vel)[4], int stars) {
     star_count = stars;
     //Paso 10: Configurar la estructura del "work-item"
     global_work_size[0] = stars; global_work_size[1] = 1;
@@ -111,7 +111,8 @@ cl_int CL_State::createBuffers(float *pos, float *vel, float *new_pos, float *ne
     return status;
 }
 
-cl_int CL_State::call(float time, float *pos, float *vel) {
+cl_int CL_State::call(float time, float (*pos)[4], float (*vel)[4]) {
+    //cout << "calling " << star_count << endl;
     int size = star_count * 4 * sizeof(float);
     //int n = N;
     //PASO 9: Pasar argumentos al kernel

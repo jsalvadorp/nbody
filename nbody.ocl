@@ -1,7 +1,7 @@
 
 
-#define EPS2 (6e10f)
-#define G (0.0006f)
+#define EPS2 (6e8f)
+#define G (6e-9f)
 
 // usamos float4 para guardar la posicion en los primeros 3 valores y la masa en el ultimo
 
@@ -9,10 +9,11 @@
 // G constante gravitacional??
 float4 accDelta(float4 a, float4 b) {
     float4 r = b - a;//(float4) (b.x - a.x, b.y - a.y, b.z - a.z, 0.0f);
+    r.w = 0.0f;
     float dist2 = dot(r, r) + EPS2;
     float dist3inv = 1.0f / sqrt(dist2 * dist2 * dist2);
     float s = G * b.w * dist3inv; // * G
-    return (float4)(r.x * s, r.y * s, r.z * s, 0.0f);
+    return r * s;
 }
 
 __kernel void nbody(
@@ -25,32 +26,17 @@ __kernel void nbody(
 ) {
     int j = get_global_id(0) * get_local_size(0) + get_local_id(0);
 
-    //printf("time %f", time_delta);
-    //new_position[j].x = -time_delta; // return;
-    //new_velocity[j].x = -count; return;
-    
-    
-    new_position[j] = position[j] + velocity[j] * time_delta;
-    //new_position[j].x = position[j].x + velocity[j].x * time_delta;
-    //new_position[j].y = position[j].y + velocity[j].y * time_delta;
-    //new_position[j].z = position[j].z + velocity[j].z * time_delta;
-    
-    // no es necesario porque la masa no cambia
-    new_position[j].w = position[j].w;
-
     float4 acceleration = (float4)(0.0f);
     for(int i = 0; i < count; i++) {
-        float4 acc_delta = accDelta(position[j], position[i]);
-        acceleration += acc_delta;
-        //acceleration.x -= acc_delta.x;
-        //acceleration.y -= acc_delta.y;
-        //acceleration.z -= acc_delta.z;
+        acceleration += accDelta(position[j], position[i]);
     }
 
-    new_velocity[j] = velocity[j] + acceleration * time_delta;
-    //new_velocity[j].x = velocity[j].x + acceleration.x * time_delta;
-    //new_velocity[j].y = velocity[j].y + acceleration.y * time_delta;
-    //new_velocity[j].z = velocity[j].z + acceleration.z * time_delta;
+    float4 delta_vel = acceleration * time_delta; 
+    float4 mean_vel = velocity[j] + delta_vel;
+    new_position[j] = position[j] + mean_vel * time_delta;
+    new_position[j].w = position[j].w;
+
+    new_velocity[j] = velocity[j] + delta_vel;
     
 }
 

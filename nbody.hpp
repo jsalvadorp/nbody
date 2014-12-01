@@ -18,11 +18,6 @@
 
 using namespace std;
 
-extern int star_count;
-extern float *position;
-extern float *velocity;
-extern float *new_position;
-extern float *new_velocity;
 
 extern char *programSource;
 
@@ -54,9 +49,9 @@ public:
 
 
     
-    cl_int createBuffers(float *pos, float *vel, float *new_pos, float *new_vel, int stars) ;
+    cl_int createBuffers(float (*pos)[4], float (*vel)[4], float (*new_pos)[4], float (*new_vel)[4], int stars);
 
-    cl_int call(float time, float *pos, float *vel) ;
+    cl_int call(float time, float (*pos)[4], float (*vel)[4]);
 
     void free() ;
 
