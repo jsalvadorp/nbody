@@ -100,9 +100,9 @@ cl_int CL_State::createBuffers(float (*pos)[4], float (*vel)[4], float (*new_pos
 
     //PASO 6: Pasar los datos de la memoria del CPU a los "buffers" del dispositivo
     status = clEnqueueWriteBuffer(cmdQueue, buf_position, CL_FALSE, 0, size, pos, 0, NULL, NULL);
-    status = clEnqueueWriteBuffer(cmdQueue, buf_new_position, CL_FALSE, 0,size, vel, 0, NULL, NULL);
-    status = clEnqueueWriteBuffer(cmdQueue, buf_velocity, CL_FALSE, 0, size, new_pos, 0, NULL, NULL);
-    status = clEnqueueWriteBuffer(cmdQueue, buf_new_velocity, CL_FALSE, 0, size, new_vel, 0, NULL, NULL);
+    //status = clEnqueueWriteBuffer(cmdQueue, buf_new_position, CL_FALSE, 0,size, new_pos, 0, NULL, NULL);
+    status = clEnqueueWriteBuffer(cmdQueue, buf_velocity, CL_FALSE, 0, size, vel, 0, NULL, NULL);
+    //status = clEnqueueWriteBuffer(cmdQueue, buf_new_velocity, CL_FALSE, 0, size, new_vel, 0, NULL, NULL);
     
     if (status!=CL_SUCCESS) {
 		printf("Failure buffers %i", status);

@@ -1,6 +1,6 @@
 
 
-#define EPS2 (6e8f)
+#define EPS2 (6e3f)
 #define G (6e-9f)
 
 // usamos float4 para guardar la posicion en los primeros 3 valores y la masa en el ultimo
