@@ -1,0 +1,8 @@
+﻿  nbody.cpp
+d:\informatikstudium\semester5ws1415tec\programación_concurrente_y_par\final project\nbody\nbody.cpp(12): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+          c:\program files (x86)\microsoft visual studio 11.0\vc\include\stdio.h(218): Siehe Deklaration von 'fopen'
+d:\informatikstudium\semester5ws1415tec\programación_concurrente_y_par\final project\nbody\nbody.cpp(63): warning C4996: 'clCreateCommandQueue': wurde als veraltet deklariert
+          c:\program files (x86)\intel\opencl sdk\4.6\include\cl\cl.h(1358): Siehe Deklaration von 'clCreateCommandQueue'
+  main.cpp
+  Code wird generiert...
+  MatrixMultOpenCL.vcxproj -> D:\Informatikstudium\Semester5WS1415TEC\Programación_concurrente_y_par\Final Project\nbody\VSStudioNBody\Debug\NBodyVSStudio.exe
